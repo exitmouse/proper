@@ -1,0 +1,16 @@
+Name:                PROPER
+Version:             0.1
+Synopsis:            Pennapps 2013
+License:             GPLv3
+Author:              Jesse Selover
+Maintainer:          jselover@mit.edu
+Stability:           Experimental
+Build-type:          Simple
+Cabal-version:       >=1.2
+
+Executable proper
+  hs-source-dirs: src
+  main-is: Main.hs
+
+  Build-depends: base   >= 4
+               , OpenGL >= 2.8
