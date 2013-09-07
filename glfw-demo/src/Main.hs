@@ -70,7 +70,7 @@ quadrants img = mconcat [
     (Draw.translate (-0.5,-0.5) `Draw.compose` Draw.rotate (pi/2) %%)] (Draw.scale 0.5 0.5 %% img)
 
 circleText :: Draw.Font -> String -> Draw.Image Any
-circleText font str = unitText font str `mappend` Draw.tint (Draw.Color 0 0 1 1) Draw.circle
+circleText font str = Draw.tint (Draw.Color 0 0 1 0.5) Draw.circle `mappend` unitText font str
 
 main :: IO ()
 main = do
@@ -198,6 +198,7 @@ run = do
     draw
     liftIO $ do
         GLFW.swapBuffers win
+        GL.clear [GL.ColorBuffer, GL.DepthBuffer]
         GL.flush  -- not necessary, but someone recommended it
         GLFW.pollEvents
     processEvents
