@@ -295,12 +295,10 @@ adjustWindow = do
 
 draw :: Demo ()
 draw = do
-    window <- asks envWindow
     font <- gets stateFont
     rotation <- gets stateRotation
     liftIO $ do
-        Draw.clearRender $ Draw.rotate rotation %% quadrants (circleText font "Hello, World!")
-        GLFW.swapBuffers window
+        Draw.render $ Draw.rotate rotation %% quadrants (circleText font "Hello, World!")
 
 --getCursorKeyDirections :: GLFW.Window -> IO (Double, Double)
 --getCursorKeyDirections win = do
