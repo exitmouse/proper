@@ -7,13 +7,14 @@ import qualified Data.Map as M
 import qualified Data.Time as T
 
 data World = World
-  { worldCharacterMap :: M.Map PersonID Person
+  { worldCharacterMap :: M.Map CharacterID Character
   , worldBackgroundMap :: M.Map BackgroundID Background
   , worldParagraphMap :: M.Map ParaID Paragraph
   , worldTime :: T.TimeOfDay
   }
 
-type PersonID = String
+type BackgroundID = String
+type CharacterID = String
 type PoseID = String
 type ParaID = String
 type StatName = String
@@ -27,18 +28,18 @@ type Paragraph = [Event]
 type Position = (Double, Double)
 
 data Event = AdvanceTime T.TimeOfDay
-           | AffectStat PersonID StatName Int
-           | ExitStage PersonID
+           | AffectStat CharacterID StatName Int
+           | ExitStage CharacterID
            | InvertGlobalBool BoolID
-           | Line PersonID String
+           | Line CharacterID String
            | MenuAsk Menu
-           | PlaceUnit PersonID FilePath Position
+           | PlaceUnit CharacterID FilePath Position
            | SetGlobalBool BoolID Bool
            | SetGlobalNote NoteID String
 
-data Person = Person
-  { personFrames :: M.Map PoseID FilePath
-  , personStatBlock :: M.Map StatName Int
+data Character = Character
+  { characterFrames :: M.Map PoseID FilePath
+  , characterStatBlock :: M.Map StatName Int
   }
 
 type Background = FilePath
