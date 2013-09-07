@@ -4,37 +4,38 @@ module VisnovDesc where
 
 --import qualified Graphics.DrawingCombinators as DC
 import qualified Data.Map as M 
+import qualified Data.Time as T
 
 data World = World
-  { characterMap :: M.Map UnitID Unit
+  { characterMap :: M.Map PersonID Person
   , paragraphMap :: M.Map ParaID Paragraph
-  , stagingMap :: M.Map StageID Staging
-  , leTime :: Time
+  , worldTime :: T.TimeOfDay
   }
 
-type UnitID, ParaID, StageID, StatName = String
+type PersonID = String
+type ParaID = String
+type StatName = String
+type BoolID = String
+type NoteID = String
 
-type Menu = [(String, Event)]
+type Menu = [(String, ParaID)]
 
 type Paragraph = [Event]
-
-type Staging = (RoomID, [UnitID, Position])
 
 type Position = (Double, Double)
 
 data Event = 
-    AdvanceTime Time
-  | AffectStat UnitID StatID Int
- -- | AffectAffinity UnitID UnitID Int
-  | ExitStage UnitID
+    AdvanceTime T.TimeOfDay
+  | AffectStat PersonID StatName Int
+  | ExitStage PersonID
   | InvertGlobalBool BoolID
-  | Line UnitID String
+  | Line PersonID String
   | MenuAsk Menu
-  | PlaceUnit UnitID Path Position
+  | PlaceUnit PersonID FilePath Position
   | SetGlobalBool BoolID Bool
   | SetGlobalNote NoteID String
 
-data Character = Character
-  { defaultFrame :: Path
+data Person = Person
+  { defaultFrame :: FilePath
   , statBlock :: M.Map StatName Int
   }
