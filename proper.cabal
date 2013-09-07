@@ -12,5 +12,6 @@ Executable proper
   hs-source-dirs: src
   main-is: Main.hs
 
-  Build-depends: base   >= 4
-               , OpenGL >= 2.8
+  Build-depends: base                        >= 4
+               , OpenGL                      >= 2.8
+               , graphics-drawingcombinators >= 1.4.4.1
