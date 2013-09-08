@@ -22,12 +22,13 @@ import Control.Monad.State (StateT, runStateT, get, put)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
-import qualified Graphics.Rendering.OpenGL as GL
-import qualified Graphics.UI.GLFW          as GLFW
+import qualified Graphics.UI.SDL as SDL
+import Graphics.UI.SDL.Image (load)
 
 import VisnovDesc
 import Sprite (drawSprite)
 import GLFWHelpers
+
 
 type Visnov s = ReaderT World (StateT s Drawing)
 type Event s = Visnov s ()
@@ -40,43 +41,21 @@ runVisnov :: Visnov s a -> World -> s -> IO ()
 runVisnov v w s = do
   let width  = 640
       height = 480
-
-  withWindow width height "GLFW-b-demo" $ \win -> do
-    eventsChan <- newTQueueIO :: IO (TQueue GLEvent)
-    GLFW.setErrorCallback               $ Just $ errorCallback           eventsChan
-    GLFW.setWindowPosCallback       win $ Just $ windowPosCallback       eventsChan
-    GLFW.setWindowSizeCallback      win $ Just $ windowSizeCallback      eventsChan
-    GLFW.setWindowCloseCallback     win $ Just $ windowCloseCallback     eventsChan
-    GLFW.setWindowRefreshCallback   win $ Just $ windowRefreshCallback   eventsChan
-    GLFW.setWindowFocusCallback     win $ Just $ windowFocusCallback     eventsChan
-    GLFW.setWindowIconifyCallback   win $ Just $ windowIconifyCallback   eventsChan
-    GLFW.setFramebufferSizeCallback win $ Just $ framebufferSizeCallback eventsChan
-    GLFW.setMouseButtonCallback     win $ Just $ mouseButtonCallback     eventsChan
-    GLFW.setCursorPosCallback       win $ Just $ cursorPosCallback       eventsChan
-    GLFW.setCursorEnterCallback     win $ Just $ cursorEnterCallback     eventsChan
-    GLFW.setScrollCallback          win $ Just $ scrollCallback          eventsChan
-    GLFW.setKeyCallback             win $ Just $ keyCallback             eventsChan
-    GLFW.setCharCallback            win $ Just $ charCallback            eventsChan
-    GLFW.swapInterval 1
-    --GL.enable CapDepthTest Disabled 
-    --GL.enable CapAlphaTest Disabled 
-    --GL.enable CapBlend Enabled
-    GL.clearColor GL.$= GL.Color4 0.5 0.5 0.5 1
-    --GL.depthTest GL.$= GL.Disabled
-    --GL.alphaTest GL.$= GL.Disabled
-    GL.dither GL.$= GL.Disabled
-    GL.blend GL.$= GL.Enabled
-    GL.blendFunc GL.$= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
+  SDL.withInit [SDL.InitEverything] $ do
+    screen <- SDL.setVideoMode width height 32 [SDL.SWSurface]
+    hello <- load "img/cat.png"
+    SDL.blitSurface hello Nothing screen Nothing
+    SDL.flip screen
+    SDL.delay 2000
     let env = Env
-          { envEventsChan    = eventsChan
-          , envWindow        = win
+          { surface = screen
           }
         state = State
           { stateWindowWidth     = width
           , stateWindowHeight    = height
           , advanceText          = False
           }
-    void $ evalRWST (adjustWindow >> runStateT (runReaderT v w) s) env state
+    void $ evalRWST (runStateT (runReaderT v w) s) env state
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith
@@ -120,9 +99,9 @@ pose s = Dialogue $ do
     Just frame -> lift (drawChar frame :: Event u)
 
 drawChar :: Pose -> Event u
-drawChar f = liftIO $ drawSprite f (0, 0)
+drawChar f = promote $ drawSprite f (0, 0)
 drawBg :: Background -> Event u
-drawBg f = liftIO $ drawSprite f (0, 0)
+drawBg f = promote $ drawSprite f (0, 0)
 
 writeGameText :: String -> Dialogue u ()
 writeGameText s = Dialogue $ do

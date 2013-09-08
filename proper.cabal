@@ -14,15 +14,13 @@ Executable proper
 
   Build-depends: base                        >= 4
                , containers                  >= 0.5
-               , OpenGL                      >= 2.8
                , mtl                         >= 2.1
                , transformers                >= 0.3
-               , bitmap                      >= 0.0.2
-               , bitmap-opengl               >= 0.0.0.1
-               , stb-image                   >= 0.2.1
                , SDL                         >= 0.6.5
+               , SDL-image                   >= 0.6.1
+               , SDL-ttf                     >= 0.6.1
                , SDL-mixer                   >= 0.6.1
+               , SDL-gfx                     >= 0.6.0
                , async                       >= 2.0.1.4
-               , GLFW-b                      == 1.2.*
                , pretty                      == 1.1.*
                , stm                         == 2.4.*
