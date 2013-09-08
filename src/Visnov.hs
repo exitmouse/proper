@@ -8,7 +8,8 @@ module Visnov ( Visnov
               , getCharacter
               , getChoice
               , pose
-              , talk
+              , as
+              , say
               , background
               ) where
 
@@ -30,8 +31,11 @@ instance IsString (Dialogue s ()) where
 runVisnov :: Visnov s a -> World -> s -> IO (a, s)
 runVisnov v w s = runStateT (runReaderT v w) s
 
-talk :: Character -> Dialogue s () -> Visnov s ()
-talk = runDialogueWith
+as :: Character -> Dialogue s () -> Visnov s ()
+as = runDialogueWith
+
+say :: Dialogue s () -> Dialogue s ()
+say = id
 
 runDialogueWith :: Character -> Dialogue s a -> Visnov s a
 runDialogueWith p d = runReaderT (unDialogue d) p
@@ -66,9 +70,9 @@ pose s = Dialogue $ do
     Just frame -> ReaderT $ \r -> (drawChar frame :: Event u)
 
 drawChar :: Pose -> Event u
-drawChar f = undefined -- TODO draw in position for character
+drawChar f = return undefined -- TODO draw in position for character
 drawBg :: Background -> Event u
-drawBg f = undefined -- TODO draw in position for background
+drawBg f = return undefined -- TODO draw in position for background
 
 writeGameText :: String -> IO ()
-writeGameText = undefined
+writeGameText = return undefined

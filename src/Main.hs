@@ -2,9 +2,11 @@
 module Main where
 
 import qualified Data.Map.Strict as M
+import Control.Monad.IO.Class (liftIO)
 
 import Visnov
 import VisnovDesc
+import Sound
 
 main = do
   putStrLn "Ok."
@@ -24,31 +26,33 @@ loadWorld = setupWorld charMap bgMap
 
 game :: Visnov Int ()
 game = do
-  e <- getCharacter "Espen"
-  talk e $ do
-    "Text" :: Dialogue Int ()
-    "Next line" :: Dialogue Int ()
-    "Third line"
+  liftIO $ playBackground "song.wav"
+  e <- getCharacter "archibald"
+  as e $ do
+    pose "blank_stare"
+    say "Text"
+    say "Next line"
+    say "Third line"
   getChoice [ ("Agree with him", charAgree e)
             , ("Disagree!!", charAgree e)
-            , ("Fly a plane", espenflyplane)
+            , ("Fly a plane", flyplane)
             ]
 
 charAgree :: Character -> Visnov Int ()
 charAgree c = do
-  talk c $ do
+  as c $ do
     "I totally agree with you" :: Dialogue Int ()
     "Yep that's a good idea." :: Dialogue Int ()
   end "You died."
 
-espenflyplane :: Visnov Int ()
-espenflyplane = do
+flyplane :: Visnov Int ()
+flyplane = do
   end "You died."
 
 loop :: Visnov Int ()
-loop = getChoice [ ("Exit", espenflyplane)
+loop = getChoice [ ("Exit", flyplane)
                  , ("Repeat", loop)
                  ]
 
 end :: String -> Visnov a ()
-end = undefined
+end = return undefined
