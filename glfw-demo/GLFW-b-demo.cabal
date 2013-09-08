@@ -43,7 +43,6 @@ executable GLFW-b-demo
     mtl          == 2.1.*,
     pretty       == 1.1.*,
     stm          == 2.4.*,
-    graphics-drawingcombinators >= 1.4.4,
     transformers == 0.3.*
 
   ghc-options: -Wall -O2
