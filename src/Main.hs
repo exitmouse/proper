@@ -27,6 +27,7 @@ loadWorld = setupWorld charMap bgMap
 game :: Visnov Int ()
 game = do
   liftIO $ playBackground "song.wav"
+  setBackground "paris"
   e <- getCharacter "archibald"
   as e $ do
     pose "blank_stare"

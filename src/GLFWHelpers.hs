@@ -1,8 +1,9 @@
 module GLFWHelpers ( Drawing
                    , Env(..)
                    , State(..)
-                   , drawGameText
+                   , blitGameText
                    , blitGameTextBox
+                   , writeGameTextByChar
                    ) where
 
 --------------------------------------------------------------------------------
@@ -31,11 +32,18 @@ data State = State
     , stateWindowHeight    :: !Int
     , advanceText          :: !Bool
     , currentText          :: !String
+    , currentPose          :: !String
+    , currentBg            :: !String
     }
 
 --------------------------------------------------------------------------------
 
 type Drawing = RWST Env () State IO
+
+writeGameTextByChar :: String -> String -> Drawing ()
+writeGameTextByChar cname s = do
+  blitGameTextBox
+  blitGameText (cname ++ ": " ++ s)
 
 -- Blit functions don't flip. Draw functions do.
 blitGameTextBox :: Drawing ()
@@ -48,8 +56,8 @@ blitGameTextBox = do
   _ <- liftIO $ box tgt (Rect x1 y1 x2 y2) (Pixel 0xffbe6cbb)
   return ()
 
-drawGameText :: String -> Drawing ()
-drawGameText s = do
+blitGameText :: String -> Drawing ()
+blitGameText s = do
   tgt <- asks surface
   modify $ \state -> state { currentText = s }
   font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationMono-Regular.ttf" 12

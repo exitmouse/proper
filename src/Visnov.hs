@@ -11,6 +11,7 @@ module Visnov ( Visnov
               , as
               , say
               , background
+              , setBackground
               ) where
 
 import Control.Concurrent.STM    (TQueue, atomically, newTQueueIO, tryReadTQueue, writeTQueue)
@@ -18,7 +19,7 @@ import Control.Monad (Monad, void, (>>))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), runReaderT, ask, asks, local)
 import Control.Monad.RWS.Strict (evalRWST)
-import Control.Monad.State (StateT, runStateT, get, put)
+import Control.Monad.State (StateT, runStateT, get, gets, put, modify)
 import Control.Monad.Trans.Class (lift)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
@@ -55,6 +56,8 @@ runVisnov v w s = do
           , stateWindowHeight    = height
           , advanceText          = False
           , currentText          = ""
+          , currentPose          = ""
+          , currentBg            = ""
           }
     void $ evalRWST (runStateT (runReaderT v w) s) env state
 
@@ -79,12 +82,14 @@ getCharacter s = do
     Nothing -> error "Requested character does not exist"
     Just character -> return character
 
-background :: BackgroundID -> Event u
-background b = do
+setBackground :: BackgroundID -> Event u
+setBackground b = do
   m_bg <- asks $ (M.lookup b) . worldBackgroundMap
   case m_bg of
     Nothing -> error "Requested background does not exist"
-    Just bg -> drawBg bg
+    Just bg -> do
+      promote . modify $ \state -> state { currentBg = b }
+      drawBg bg
 
 -- Requires IO, so isn't more general
 getChoice :: [(String, Visnov s a)] -> Visnov s a
@@ -94,10 +99,19 @@ getChoice (x:xs) = snd x -- Choose the first one TODO
 pose :: String -> Dialogue u ()
 pose s = Dialogue $ do
   character <- ask
+  lift $ setPose character s
+
+background :: String -> Dialogue u ()
+background = Dialogue . lift . setBackground
+
+setPose :: Character -> String -> Event u
+setPose character s = do
   let m_frame = M.lookup s (characterFrames character)
   case m_frame of
     Nothing -> error "No such pose"
-    Just frame -> lift (drawChar frame :: Event u)
+    Just frame -> do
+      promote . modify $ \state -> state { currentPose = s }
+      drawChar frame :: Event u
 
 drawChar :: Pose -> Event u
 drawChar f = promote $ drawSprite f (0, 0)
@@ -107,8 +121,15 @@ drawBg f = promote $ drawSprite f (0, 0)
 writeGameText :: String -> Dialogue u ()
 writeGameText s = Dialogue $ do
   (Character cname _) <- ask
-  lift $ promote $ blitGameTextBox -- Because later it might read from World
-  lift $ writeGameTextByChar cname s
+  lift $ updateText cname s
 
-writeGameTextByChar :: String -> String -> Visnov u ()
-writeGameTextByChar cname s = promote $ drawGameText (cname ++ ": " ++ s)
+updateText :: String -> String -> Visnov u ()
+updateText cname s = do
+  char <- getCharacter cname
+  tgt <- promote $ asks surface
+  poseName <- promote $ gets currentPose
+  bgName <- promote $ gets currentBg
+  liftIO $ SDL.fillRect tgt Nothing (SDL.Pixel 0x000000ff)
+  setBackground bgName
+  setPose char poseName
+  promote $ writeGameTextByChar cname s
