@@ -1,8 +1,8 @@
 module GLFWHelpers ( Drawing
                    , Env(..)
                    , State(..)
-                   , blitGameText
-                   , blitGameTextBox
+                   , drawGameText
+                   , drawGameTextBox
                    , writeGameTextByChar
                    , writeMenuText
                    , waitForTextAdvance
@@ -44,17 +44,17 @@ type Drawing = RWST Env () State IO
 
 writeGameTextByChar :: String -> String -> Drawing ()
 writeGameTextByChar cname s = do
-  blitGameTextBox
-  blitGameText (cname ++ ": " ++ s)
+  drawGameTextBox
+  drawGameText (cname ++ ": " ++ s)
 
-writeMenuText :: String -> Drawing ()
+writeMenuText :: [String] -> Drawing ()
 writeMenuText s = do
-  blitMenuTextBox
-  blitMenuText s
+  drawMenuTextBox
+  drawMenuText s
 
 -- Blit functions don't flip. Draw functions do.
-blitGameTextBox :: Drawing ()
-blitGameTextBox = do
+drawGameTextBox :: Drawing ()
+drawGameTextBox = do
   tgt <- asks surface
   let x1 = 35
       y1 = 480
@@ -63,8 +63,8 @@ blitGameTextBox = do
   _ <- liftIO $ box tgt (Rect x1 y1 x2 y2) (Pixel 0xffbe6cbb)
   return ()
 
-blitMenuTextBox :: Drawing ()
-blitMenuTextBox = do
+drawMenuTextBox :: Drawing ()
+drawMenuTextBox = do
   tgt <- asks surface
   let x1 = 35
       y1 = 445
@@ -81,16 +81,30 @@ blitText x y s = do
   im <- liftIO $ renderUTF8Solid font s (Color 0 0 255)
   let w = surfaceGetWidth im
       h = surfaceGetHeight im
-  _ <- liftIO $ blitSurface im Nothing tgt $ Just $ Rect x y w h
+  void $ liftIO $ blitSurface im Nothing tgt $ Just $ Rect x y w h
+
+drawText :: Int -> Int -> String -> Drawing ()
+drawText x y s = do
+  blitText x y s
+  tgt <- asks surface
   liftIO $ flip tgt
-  liftIO $ delay 2000
   return ()
 
-blitMenuText :: String -> Drawing ()
-blitMenuText = blitText 40 40
+drawMenuText :: [String] -> Drawing ()
+drawMenuText s = do
+  let l = length s
+      min = 40
+      max = 440
+      offset = (max-min) `div` l
+  drawAll s min offset
 
-blitGameText :: String -> Drawing ()
-blitGameText = blitText 40 300
+drawAll :: [String] -> Int -> Int -> Drawing ()
+drawAll [] _ _= return ()
+drawAll [s] min _ = drawText 40 min s
+drawAll (s:xs) min offset = blitText 40 min s >> drawAll xs (min+offset) offset
+
+drawGameText :: String -> Drawing ()
+drawGameText = drawText 40 300
 
 waitForTextAdvance :: Drawing ()
 waitForTextAdvance = do

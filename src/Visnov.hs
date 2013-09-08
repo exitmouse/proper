@@ -21,7 +21,6 @@ import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), ru
 import Control.Monad.RWS.Strict (evalRWST)
 import Control.Monad.State (StateT, runStateT, get, gets, put, modify)
 import Control.Monad.Trans.Class (lift)
-import Data.List (intercalate)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
 import qualified Graphics.UI.SDL as SDL
@@ -98,8 +97,8 @@ getChoice xs = do
   idx <- updateChoice (menuText $ map fst xs)
   snd $ (xs !! idx)
 
-menuText :: [String] -> String
-menuText options = intercalate "\n" $ map (\(x,y) -> x ++ ": " ++ y) (zip ["a", "b", "c", "d", "e"] options)
+menuText :: [String] -> [String]
+menuText options = map (\(x,y) -> x ++ ": " ++ y) (zip ["a", "b", "c", "d", "e"] options)
 
 pose :: String -> Dialogue u ()
 pose s = Dialogue $ do
@@ -140,7 +139,7 @@ updateText cname s = do
   promote $ writeGameTextByChar cname s
   promote $ waitForTextAdvance
 
-updateChoice :: String -> Visnov u Int
+updateChoice :: [String] -> Visnov u Int
 updateChoice s = do
   tgt <- promote $ asks surface
   bgName <- promote $ gets currentBg
