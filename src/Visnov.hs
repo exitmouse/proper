@@ -105,7 +105,7 @@ drawBg f = promote $ drawSprite f (0, 0)
 writeGameText :: String -> Dialogue u ()
 writeGameText s = Dialogue $ do
   (Character cname _) <- ask
-  ReaderT $ \r -> writeGameTextByChar cname s
+  lift $ writeGameTextByChar cname s
 
 writeGameTextByChar :: String -> String -> Visnov u ()
 writeGameTextByChar cname s = promote $ drawGameText (cname ++ ": " ++ s)
