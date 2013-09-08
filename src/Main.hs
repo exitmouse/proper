@@ -17,7 +17,7 @@ game = do
   talk e $ do
     "Text" :: Dialogue Int ()
     "Next line" :: Dialogue Int ()
-    "Third line" :: Dialogue Int ()
+    "Third line"
   getChoice [ ("Agree with him", charAgree e)
             , ("Disagree!!", charAgree e)
             , ("Fly a plane", espenflyplane)
