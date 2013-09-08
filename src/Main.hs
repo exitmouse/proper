@@ -1,15 +1,26 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import qualified Data.Map.Strict as M
+
 import Visnov
-import VisnovDesc (World(..), Character(..))
+import VisnovDesc
 
 main = do
   putStrLn "Ok."
-  runVisnov game worldData 0
+  world <- loadWorld
+  runVisnov game world 0
 
-worldData :: World
-worldData = undefined
+loadWorld :: IO World
+loadWorld = setupWorld charMap bgMap
+  where
+    charMap :: M.Map CharacterID (M.Map PoseID FilePath)
+    charMap = M.fromList [ ("duderton", M.singleton "blank_stare" "img/duderton.png")
+                         , ("archibald", M.singleton "blank_stare" "img/archibald.png")
+                         , ("box", M.singleton "base" "img/box.png")
+                         ]
+    bgMap :: M.Map BackgroundID FilePath
+    bgMap = M.singleton "paris" "img/paris.png"
 
 game :: Visnov Int ()
 game = do
