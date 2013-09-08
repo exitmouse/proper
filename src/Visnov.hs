@@ -19,8 +19,12 @@ import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), ru
 import Control.Monad.State (StateT, runStateT, get, put)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
+import qualified Graphics.Rendering.OpenGL as GL
+import qualified Graphics.UI.GLFW          as GLFW
+
 import VisnovDesc
-import Sprite (drawSprite, setupOpenGL)
+import Sprite (drawSprite)
+import GLFWHelpers
 
 type Visnov s = ReaderT World (StateT s IO)
 type Event s = Visnov s ()
@@ -31,9 +35,30 @@ instance IsString (Dialogue s ()) where
 
 runVisnov :: Visnov s a -> World -> s -> IO (a, s)
 runVisnov v w s = do
-  setupOpenGL
-  runStateT (runReaderT v w) s
+  let width  = 640
+      height = 480
 
+  withWindow width height "GLFW-b-demo" $ \win -> do
+    GLFW.swapInterval 1
+    --GL.enable CapDepthTest Disabled 
+    --GL.enable CapAlphaTest Disabled 
+    --GL.enable CapBlend Enabled
+    GL.clearColor GL.$= GL.Color4 0.5 0.5 0.5 1
+    --GL.depthTest GL.$= GL.Disabled
+    --GL.alphaTest GL.$= GL.Disabled
+    GL.dither GL.$= GL.Disabled
+    GL.blend GL.$= GL.Enabled
+    GL.blendFunc GL.$= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
+    --let env = Env
+    --    { envEventsChan    = eventsChan
+    --    , envWindow        = win
+    --    }
+    --  state = State
+    --    { stateWindowWidth     = width
+    --    , stateWindowHeight    = height
+    --    }
+    --runDemo env state
+    runStateT (runReaderT v w) s
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith
