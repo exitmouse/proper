@@ -41,8 +41,8 @@ game = do
 charAgree :: Character -> Visnov Int ()
 charAgree c = do
   as c $ do
-    "I totally agree with you" :: Dialogue Int ()
-    "Yep that's a good idea." :: Dialogue Int ()
+    say "I totally agree with you"
+    say "Yep that's a good idea."
   end "You died."
 
 flyplane :: Visnov Int ()
