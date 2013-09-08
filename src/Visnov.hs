@@ -24,6 +24,7 @@ import qualified Data.Map as M
 import Data.String (IsString, fromString)
 import qualified Graphics.UI.SDL as SDL
 import Graphics.UI.SDL.Image (load)
+import qualified Graphics.UI.SDL.TTF as SDLTTF
 
 import VisnovDesc
 import Sprite (drawSprite)
@@ -42,6 +43,7 @@ runVisnov v w s = do
   let width  = 640
       height = 480
   SDL.withInit [SDL.InitEverything] $ do
+    SDLTTF.init
     screen <- SDL.setVideoMode width height 32 [SDL.SWSurface]
     SDL.flip screen
 
