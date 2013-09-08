@@ -2,6 +2,7 @@
 module Sprite ( Sprite
               , loadSprite
               , drawSprite
+              , setupOpenGL
               ) where
 
 import Data.Bitmap.Base (bitmapSize)
@@ -43,3 +44,7 @@ texVert :: (TexCoordComponent a, VertexComponent b) => (a, a, b, b) -> IO ()
 texVert (s, t, x, y) = do
   texCoord $ TexCoord2 s t
   vertex $ Vertex2 x y
+
+setupOpenGL :: IO ()
+setupOpenGL = do
+  putStrLn "Here is where I would set up OpenGL."

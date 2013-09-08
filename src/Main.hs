@@ -55,4 +55,4 @@ loop = getChoice [ ("Exit", flyplane)
                  ]
 
 end :: String -> Visnov a ()
-end = return undefined
+end = liftIO . putStrLn

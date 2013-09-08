@@ -20,6 +20,7 @@ import Control.Monad.State (StateT, runStateT, get, put)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
 import VisnovDesc
+import Sprite (drawSprite, setupOpenGL)
 
 type Visnov s = ReaderT World (StateT s IO)
 type Event s = Visnov s ()
@@ -29,7 +30,10 @@ instance IsString (Dialogue s ()) where
   fromString s = Dialogue $ liftIO (writeGameText s)
 
 runVisnov :: Visnov s a -> World -> s -> IO (a, s)
-runVisnov v w s = runStateT (runReaderT v w) s
+runVisnov v w s = do
+  setupOpenGL
+  runStateT (runReaderT v w) s
+
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith
@@ -75,4 +79,4 @@ drawBg :: Background -> Event u
 drawBg f = liftIO $ drawSprite f (0, 0)
 
 writeGameText :: String -> IO ()
-writeGameText = return undefined
+writeGameText = liftIO . putStrLn
