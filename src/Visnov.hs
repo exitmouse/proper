@@ -43,10 +43,9 @@ runVisnov v w s = do
       height = 480
   SDL.withInit [SDL.InitEverything] $ do
     screen <- SDL.setVideoMode width height 32 [SDL.SWSurface]
-    hello <- load "img/cat.png"
-    SDL.blitSurface hello Nothing screen Nothing
+    --hello <- load "img/cat.png"
+    --SDL.blitSurface hello Nothing screen Nothing
     SDL.flip screen
-    SDL.delay 2000
     let env = Env
           { surface = screen
           }

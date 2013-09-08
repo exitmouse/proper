@@ -15,6 +15,7 @@ import Data.List                 (intercalate)
 import Data.Maybe                (catMaybes)
 
 import Graphics.UI.SDL
+import Graphics.UI.SDL.TTF
 
 --------------------------------------------------------------------------------
 
@@ -33,7 +34,17 @@ data State = State
 type Drawing = RWST Env () State IO
 
 drawGameText :: String -> Drawing ()
-drawGameText = undefined
+drawGameText s = do
+  tgt <- asks surface
+  state <- get
+  font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationSerif-Regular.ttf" 12
+  im <- liftIO $ renderUTF8Solid font s (Color 1 0 0)
+  let w = surfaceGetWidth im
+      h = surfaceGetHeight im
+      x = 40
+      y = 300
+  _ <- liftIO $ blitSurface im Nothing tgt $ Just $ Rect x y w h
+  return ()
 
 --draw :: Drawing ()
 --draw = do
