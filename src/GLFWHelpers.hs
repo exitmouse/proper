@@ -4,6 +4,9 @@ module GLFWHelpers ( Drawing
                    , blitGameText
                    , blitGameTextBox
                    , writeGameTextByChar
+                   , writeMenuText
+                   , waitForTextAdvance
+                   , waitForMenuChoice
                    ) where
 
 --------------------------------------------------------------------------------
@@ -30,7 +33,6 @@ data Env = Env
 data State = State
     { stateWindowWidth     :: !Int
     , stateWindowHeight    :: !Int
-    , advanceText          :: !Bool
     , currentText          :: !String
     , currentPose          :: !String
     , currentBg            :: !String
@@ -45,6 +47,11 @@ writeGameTextByChar cname s = do
   blitGameTextBox
   blitGameText (cname ++ ": " ++ s)
 
+writeMenuText :: String -> Drawing ()
+writeMenuText s = do
+  blitMenuTextBox
+  blitMenuText s
+
 -- Blit functions don't flip. Draw functions do.
 blitGameTextBox :: Drawing ()
 blitGameTextBox = do
@@ -56,66 +63,50 @@ blitGameTextBox = do
   _ <- liftIO $ box tgt (Rect x1 y1 x2 y2) (Pixel 0xffbe6cbb)
   return ()
 
-blitGameText :: String -> Drawing ()
-blitGameText s = do
+blitMenuTextBox :: Drawing ()
+blitMenuTextBox = do
+  tgt <- asks surface
+  let x1 = 35
+      y1 = 445
+      x2 = 605
+      y2 = 35
+  _ <- liftIO $ box tgt (Rect x1 y1 x2 y2) (Pixel 0xffbe6cbb)
+  return ()
+
+blitText :: Int -> Int -> String -> Drawing ()
+blitText x y s = do
   tgt <- asks surface
   modify $ \state -> state { currentText = s }
   font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationMono-Regular.ttf" 12
   im <- liftIO $ renderUTF8Solid font s (Color 0 0 255)
   let w = surfaceGetWidth im
       h = surfaceGetHeight im
-      x = 40
-      y = 300
   _ <- liftIO $ blitSurface im Nothing tgt $ Just $ Rect x y w h
   liftIO $ flip tgt
   liftIO $ delay 2000
   return ()
 
---draw :: Drawing ()
---draw = do
---    --env   <- ask
---    --state <- get
---    liftIO $ do
---        GL.clear [GL.ColorBuffer, GL.DepthBuffer]
---
---drawGameText :: String -> Drawing ()
---drawGameText s = do
---  env <- ask
---  liftIO $ do
---    GL.clear [GL.ColorBuffer, GL.DepthBuffer]
---    renderText s
---  processEvents
---  state <- get
---  unless (advanceText state) $ do
---    modify $ \s -> s { advanceText = False }
---    drawGameText s
---
---renderText :: String -> IO ()
---renderText s = return undefined
+blitMenuText :: String -> Drawing ()
+blitMenuText = blitText 40 40
 
---getCursorKeyDirections :: GLFW.Window -> IO (Double, Double)
---getCursorKeyDirections win = do
---    x0 <- isPress `fmap` GLFW.getKey win GLFW.Key'Up
---    x1 <- isPress `fmap` GLFW.getKey win GLFW.Key'Down
---    y0 <- isPress `fmap` GLFW.getKey win GLFW.Key'Left
---    y1 <- isPress `fmap` GLFW.getKey win GLFW.Key'Right
---    let x0n = if x0 then (-1) else 0
---        x1n = if x1 then   1  else 0
---        y0n = if y0 then (-1) else 0
---        y1n = if y1 then   1  else 0
---    return (x0n + x1n, y0n + y1n)
+blitGameText :: String -> Drawing ()
+blitGameText = blitText 40 300
 
---getJoystickDirections :: GLFW.Joystick -> IO (Double, Double)
---getJoystickDirections js = do
---    maxes <- GLFW.getJoystickAxes js
---    return $ case maxes of
---      (Just (x:y:_)) -> (-y, x)
---      _              -> ( 0, 0)
+waitForTextAdvance :: Drawing ()
+waitForTextAdvance = do
+ e <- liftIO waitEvent
+ case e of
+   KeyDown _ -> return ()
+   MouseButtonDown _ _ _ -> return ()
+   _ -> waitForTextAdvance
 
---isPress :: GLFW.KeyState -> Bool
---isPress GLFW.KeyState'Pressed   = True
---isPress GLFW.KeyState'Repeating = True
---isPress _                       = False
-
---------------------------------------------------------------------------------
-
+waitForMenuChoice :: Drawing Int
+waitForMenuChoice = do
+ e <- liftIO waitEvent
+ case e of
+   KeyDown (Keysym SDLK_a _ _) -> return 0
+   KeyDown (Keysym SDLK_b _ _) -> return 1
+   KeyDown (Keysym SDLK_c _ _) -> return 2
+   KeyDown (Keysym SDLK_d _ _) -> return 3
+   KeyDown (Keysym SDLK_e _ _) -> return 4
+   _ -> waitForMenuChoice

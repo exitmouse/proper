@@ -21,6 +21,7 @@ import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), ru
 import Control.Monad.RWS.Strict (evalRWST)
 import Control.Monad.State (StateT, runStateT, get, gets, put, modify)
 import Control.Monad.Trans.Class (lift)
+import Data.List (intercalate)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
 import qualified Graphics.UI.SDL as SDL
@@ -54,7 +55,6 @@ runVisnov v w s = do
         state = State
           { stateWindowWidth     = width
           , stateWindowHeight    = height
-          , advanceText          = False
           , currentText          = ""
           , currentPose          = ""
           , currentBg            = ""
@@ -94,7 +94,12 @@ setBackground b = do
 -- Requires IO, so isn't more general
 getChoice :: [(String, Visnov s a)] -> Visnov s a
 getChoice [] = error "Call getChoice with a larger list"
-getChoice (x:xs) = snd x -- Choose the first one TODO
+getChoice xs = do
+  idx <- updateChoice (menuText $ map fst xs)
+  snd $ (xs !! idx)
+
+menuText :: [String] -> String
+menuText options = intercalate "\n" $ map (\(x,y) -> x ++ ": " ++ y) (zip ["a", "b", "c", "d", "e"] options)
 
 pose :: String -> Dialogue u ()
 pose s = Dialogue $ do
@@ -133,3 +138,13 @@ updateText cname s = do
   setBackground bgName
   setPose char poseName
   promote $ writeGameTextByChar cname s
+  promote $ waitForTextAdvance
+
+updateChoice :: String -> Visnov u Int
+updateChoice s = do
+  tgt <- promote $ asks surface
+  bgName <- promote $ gets currentBg
+  liftIO $ SDL.fillRect tgt Nothing (SDL.Pixel 0x000000ff)
+  setBackground bgName
+  promote $ writeMenuText s
+  promote $ waitForMenuChoice
