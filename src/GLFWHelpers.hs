@@ -2,6 +2,7 @@ module GLFWHelpers ( Drawing
                    , Env(..)
                    , State(..)
                    , drawGameText
+                   , blitGameTextBox
                    ) where
 
 --------------------------------------------------------------------------------
@@ -17,6 +18,7 @@ import Data.Maybe                (catMaybes)
 
 import Graphics.UI.SDL
 import Graphics.UI.SDL.TTF
+import Graphics.UI.SDL.Primitives (box)
 
 --------------------------------------------------------------------------------
 
@@ -28,16 +30,28 @@ data State = State
     { stateWindowWidth     :: !Int
     , stateWindowHeight    :: !Int
     , advanceText          :: !Bool
+    , currentText          :: !String
     }
 
 --------------------------------------------------------------------------------
 
 type Drawing = RWST Env () State IO
 
+-- Blit functions don't flip. Draw functions do.
+blitGameTextBox :: Drawing ()
+blitGameTextBox = do
+  tgt <- asks surface
+  let x1 = 35
+      y1 = 480
+      x2 = 605
+      y2 = 295
+  _ <- liftIO $ box tgt (Rect x1 y1 x2 y2) (Pixel 0xffbe6cbb)
+  return ()
+
 drawGameText :: String -> Drawing ()
 drawGameText s = do
   tgt <- asks surface
-  state <- get
+  modify $ \state -> state { currentText = s }
   font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationMono-Regular.ttf" 12
   im <- liftIO $ renderUTF8Solid font s (Color 0 0 255)
   let w = surfaceGetWidth im

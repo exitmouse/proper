@@ -54,6 +54,7 @@ runVisnov v w s = do
           { stateWindowWidth     = width
           , stateWindowHeight    = height
           , advanceText          = False
+          , currentText          = ""
           }
     void $ evalRWST (runStateT (runReaderT v w) s) env state
 
@@ -106,6 +107,7 @@ drawBg f = promote $ drawSprite f (0, 0)
 writeGameText :: String -> Dialogue u ()
 writeGameText s = Dialogue $ do
   (Character cname _) <- ask
+  lift $ promote $ blitGameTextBox -- Because later it might read from World
   lift $ writeGameTextByChar cname s
 
 writeGameTextByChar :: String -> String -> Visnov u ()
