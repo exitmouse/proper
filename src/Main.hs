@@ -9,8 +9,7 @@ import VisnovDesc
 import Sound
 import qualified ProperDemo as PD
 
-main = do
-  PD.main
+main = PD.main
   {-putStrLn "Ok."
   world <- loadWorld
   runVisnov game world 0-}
@@ -73,8 +72,7 @@ pemberNice :: Visnov Int ()
 pemberNice = do
   a <- getCharacter "archibald"
   p <- getCharacter "pemberton"
-  as p $ do
-    say "My marshmallowy form belies my true ability!"
+  as p $ say "My marshmallowy form belies my true ability!"
   as a $ do
     pose "blank_stare"
     say "--Not so fast!!"
@@ -90,8 +88,7 @@ charAgree c = do
   end "You died."
 
 flyplane :: Visnov Int ()
-flyplane = do
-  end "You flew a plane into a wall and died."
+flyplane = end "You flew a plane into a wall and died."
 
 loop :: Visnov Int ()
 loop = getChoice [ ("Exit", flyplane)

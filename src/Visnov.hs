@@ -35,9 +35,9 @@ import GLFWHelpers
 type Visnov s = ReaderT World (StateT s Drawing)
 type Event s = Visnov s ()
 
-newtype Dialogue s a = Dialogue { unDialogue :: (ReaderT Character (Visnov s) a)} deriving (Monad)
+newtype Dialogue s a = Dialogue { unDialogue :: ReaderT Character (Visnov s) a} deriving (Monad)
 instance IsString (Dialogue s ()) where
-  fromString s = (writeGameText s)
+  fromString = writeGameText
 
 runVisnov :: Visnov s a -> World -> s -> IO ()
 runVisnov v w s = do
@@ -74,16 +74,16 @@ runDialogueWith p d = runReaderT (unDialogue d) p
 
 getCharacter :: (MonadReader World m)
           => String
-          -> m (Character)
+          -> m Character
 getCharacter s = do
-  m_character <- asks $ (M.lookup s) . worldCharacterMap
+  m_character <- asks $ M.lookup s . worldCharacterMap
   case m_character of
     Nothing -> error "Requested character does not exist"
     Just character -> return character
 
 setBackground :: BackgroundID -> Event u
 setBackground b = do
-  m_bg <- asks $ (M.lookup b) . worldBackgroundMap
+  m_bg <- asks $ M.lookup b . worldBackgroundMap
   case m_bg of
     Nothing -> error "Requested background does not exist"
     Just bg -> do
@@ -95,7 +95,7 @@ getChoice :: [(String, Visnov s a)] -> Visnov s a
 getChoice [] = error "Call getChoice with a larger list"
 getChoice xs = do
   idx <- updateChoice (menuText $ map fst xs)
-  snd $ (xs !! idx)
+  snd (xs !! idx)
 
 menuText :: [String] -> [String]
 menuText options = map (\(x,y) -> x ++ ": " ++ y) (zip ["a", "b", "c", "d", "e"] options)
@@ -137,7 +137,7 @@ updateText cname s = do
   setBackground bgName
   setPose char poseName
   promote $ writeGameTextByChar cname s
-  promote $ waitForTextAdvance
+  promote waitForTextAdvance
 
 updateChoice :: [String] -> Visnov u Int
 updateChoice s = do
@@ -146,4 +146,4 @@ updateChoice s = do
   liftIO $ SDL.fillRect tgt Nothing (SDL.Pixel 0x000000ff)
   setBackground bgName
   promote $ writeMenuText s
-  promote $ waitForMenuChoice
+  promote waitForMenuChoice

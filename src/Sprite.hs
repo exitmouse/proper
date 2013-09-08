@@ -13,10 +13,8 @@ import GLFWHelpers
 
 type Sprite = Surface
 
-loadSprite :: FilePath -> IO (Sprite)
-loadSprite fp = do
-  surf <- load fp
-  return surf
+loadSprite :: FilePath -> IO Sprite
+loadSprite = load
 
 --  im <- loadImageOrError fp
 --  tex <- makeSimpleBitmapTexture im
