@@ -7,11 +7,13 @@ import Control.Monad.IO.Class (liftIO)
 import Visnov
 import VisnovDesc
 import Sound
+import qualified ProperDemo as PD
 
 main = do
-  putStrLn "Ok."
+  PD.main
+  {-putStrLn "Ok."
   world <- loadWorld
-  runVisnov game world 0
+  runVisnov game world 0-}
 
 loadWorld :: IO World
 loadWorld = setupWorld charMap bgMap
