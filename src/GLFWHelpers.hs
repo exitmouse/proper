@@ -6,6 +6,7 @@ module GLFWHelpers ( Drawing
 
 --------------------------------------------------------------------------------
 
+import Prelude hiding (flip)
 import Control.Concurrent.STM    (TQueue, atomically, newTQueueIO, tryReadTQueue, writeTQueue)
 import Control.Monad             (unless, when, void)
 --import Control.Monad.RWS.Strict  (RWST, ask, asks, evalRWST, get, liftIO, modify, put)
@@ -37,13 +38,15 @@ drawGameText :: String -> Drawing ()
 drawGameText s = do
   tgt <- asks surface
   state <- get
-  font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationSerif-Regular.ttf" 12
+  font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationMono-Regular.ttf" 12
   im <- liftIO $ renderUTF8Solid font s (Color 1 0 0)
   let w = surfaceGetWidth im
       h = surfaceGetHeight im
       x = 40
       y = 300
   _ <- liftIO $ blitSurface im Nothing tgt $ Just $ Rect x y w h
+  liftIO $ flip tgt
+  liftIO $ delay 2000
   return ()
 
 --draw :: Drawing ()
