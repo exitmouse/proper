@@ -15,7 +15,6 @@ Executable proper
   Build-depends: base                        >= 4
                , containers                  >= 0.5
                , OpenGL                      >= 2.8
-               , graphics-drawingcombinators >= 1.4.4.1
                , mtl                         >= 2.1
                , transformers                >= 0.3
                , bitmap                      >= 0.0.2
