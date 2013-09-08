@@ -5,18 +5,14 @@ module Main (main) where
 import Control.Concurrent.STM    (TQueue, atomically, newTQueueIO, tryReadTQueue, writeTQueue)
 import Control.Monad             (unless, when, void)
 --import Control.Monad.RWS.Strict  (RWST, ask, asks, evalRWST, get, liftIO, modify, put)
-import Control.Monad.RWS.Strict  (RWST, asks, evalRWST, get, gets, liftIO, modify)
+import Control.Monad.RWS.Strict  (RWST, asks, evalRWST, get, liftIO, modify)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.List                 (intercalate)
 import Data.Maybe                (catMaybes)
-import Data.Monoid hiding ((<>))
 import Text.PrettyPrint
 
-import Graphics.DrawingCombinators ((%%))
-import qualified Graphics.DrawingCombinators as Draw
 import qualified Graphics.Rendering.OpenGL as GL
 import qualified Graphics.UI.GLFW          as GLFW
-import System.Environment(getArgs)
 
 --------------------------------------------------------------------------------
 
@@ -28,8 +24,6 @@ data Env = Env
 data State = State
     { stateWindowWidth     :: !Int
     , stateWindowHeight    :: !Int
-    , stateRotation        :: !Draw.R
-    , stateFont            :: !Draw.Font
     }
 
 type Demo = RWST Env () State IO
@@ -55,35 +49,12 @@ data Event =
 
 --------------------------------------------------------------------------------
 
-unitText :: Draw.Font -> String -> Draw.Image Any
-unitText font str = (Draw.translate (-1,0) %% Draw.scale (2/w) (2/w) %% Draw.text font str)
-                        `mappend`
-                    Draw.tint (Draw.Color 1 0 0 1) (Draw.line (-1,0) (1,0))
-    where
-    w = Draw.textWidth font str
-
-quadrants :: (Monoid a) => Draw.Image a -> Draw.Image a
-quadrants img = mconcat [
-    (Draw.translate (-0.5,0.5) %%),
-    (Draw.translate (0.5,0.5)   `Draw.compose` Draw.rotate (-pi/2) %%),
-    (Draw.translate (0.5,-0.5)  `Draw.compose` Draw.rotate pi %%),
-    (Draw.translate (-0.5,-0.5) `Draw.compose` Draw.rotate (pi/2) %%)] (Draw.scale 0.5 0.5 %% img)
-
-circleText :: Draw.Font -> String -> Draw.Image Any
-circleText font str = unitText font str `mappend` Draw.tint (Draw.Color 0 0 1 1) Draw.circle
-
 main :: IO ()
 main = do
     let width  = 640
         height = 480
 
     eventsChan <- newTQueueIO :: IO (TQueue Event)
-    args <- liftIO getArgs
-    font <- liftIO $ case args of
-        [fontName] -> do
-            font <- Draw.openFont fontName
-            return font
-        _ -> error "Usage: drawingcombinators-example some_font.ttf"
 
     withWindow width height "GLFW-b-demo" $ \win -> do
         GLFW.setErrorCallback               $ Just $ errorCallback           eventsChan
@@ -108,7 +79,7 @@ main = do
         GL.lighting   GL.$= GL.Enabled
         GL.cullFace   GL.$= Just GL.Back
         GL.depthFunc  GL.$= Just GL.Less
-        GL.clearColor GL.$= GL.Color4 0.5 0.5 0.5 1
+        GL.clearColor GL.$= GL.Color4 0.05 0.05 0.05 1
         GL.normalize  GL.$= GL.Enabled
 
         let env = Env
@@ -118,8 +89,6 @@ main = do
             state = State
               { stateWindowWidth     = width
               , stateWindowHeight    = height
-              , stateRotation        = 0
-              , stateFont            = font
               }
         runDemo env state
 
@@ -295,12 +264,10 @@ adjustWindow = do
 
 draw :: Demo ()
 draw = do
-    window <- asks envWindow
-    font <- gets stateFont
-    rotation <- gets stateRotation
+    --env   <- ask
+    --state <- get
     liftIO $ do
-        Draw.clearRender $ Draw.rotate rotation %% quadrants (circleText font "Hello, World!")
-        GLFW.swapBuffers window
+        GL.clear [GL.ColorBuffer, GL.DepthBuffer]
 
 --getCursorKeyDirections :: GLFW.Window -> IO (Double, Double)
 --getCursorKeyDirections win = do

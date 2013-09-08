@@ -2,44 +2,32 @@
 
 module VisnovDesc where
 
---import qualified Graphics.DrawingCombinators as DC
-import qualified Data.Map as M 
-import qualified Data.Time as T
-
-data World = World
-  { worldCharacterMap :: M.Map CharacterID Character
-  , worldBackgroundMap :: M.Map BackgroundID Background
-  , worldParagraphMap :: M.Map ParaID Paragraph
-  , worldTime :: T.TimeOfDay
-  }
+import Data.Functor ((<$>))
+import qualified Data.Map.Strict as M 
+import Data.Traversable (traverse)
+import Sprite
 
 type BackgroundID = String
 type CharacterID = String
 type PoseID = String
-type ParaID = String
-type StatName = String
-type BoolID = String
-type NoteID = String
 
-type Menu = [(String, ParaID)]
+type Background = Sprite
+type Pose = Sprite
 
-type Paragraph = [Event]
-
-type Position = (Double, Double)
-
-data Event = AdvanceTime T.TimeOfDay
-           | AffectStat CharacterID StatName Int
-           | ExitStage CharacterID
-           | InvertGlobalBool BoolID
-           | Line CharacterID String
-           | MenuAsk Menu
-           | PlaceUnit CharacterID FilePath Position
-           | SetGlobalBool BoolID Bool
-           | SetGlobalNote NoteID String
-
-data Character = Character
-  { characterFrames :: M.Map PoseID FilePath
-  , characterStatBlock :: M.Map StatName Int
+data World = World
+  { worldCharacterMap :: M.Map CharacterID Character
+  , worldBackgroundMap :: M.Map BackgroundID Background
   }
 
-type Background = FilePath
+data Character = Character
+  { characterFrames :: M.Map PoseID Pose
+  }
+
+setupCharacter :: (M.Map PoseID FilePath) -> IO Character
+setupCharacter fPoseMap = Character <$> traverse loadSprite fPoseMap
+
+setupWorld :: (M.Map CharacterID (M.Map PoseID FilePath)) -> (M.Map BackgroundID FilePath) -> IO World
+setupWorld fCharMap fBgMap = do
+  charMap <- traverse setupCharacter fCharMap
+  bgMap <- traverse loadSprite fBgMap
+  return $ World charMap bgMap
