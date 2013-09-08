@@ -58,7 +58,7 @@ background b = do
 
 -- Requires IO, so isn't more general
 getChoice :: [(String, Visnov s a)] -> Visnov s a
-getChoice [] = undefined -- Ha Ha
+getChoice [] = error "Call getChoice with a larger list"
 getChoice (x:xs) = snd x -- Choose the first one TODO
 
 pose :: String -> Dialogue u ()
@@ -70,9 +70,9 @@ pose s = Dialogue $ do
     Just frame -> ReaderT $ \r -> (drawChar frame :: Event u)
 
 drawChar :: Pose -> Event u
-drawChar f = return undefined -- TODO draw in position for character
+drawChar f = liftIO $ drawSprite f (0, 0)
 drawBg :: Background -> Event u
-drawBg f = return undefined -- TODO draw in position for background
+drawBg f = liftIO $ drawSprite f (0, 0)
 
 writeGameText :: String -> IO ()
 writeGameText = return undefined
