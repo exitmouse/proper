@@ -13,9 +13,11 @@ module Visnov ( Visnov
               , background
               ) where
 
+import Control.Concurrent.STM    (TQueue, atomically, newTQueueIO, tryReadTQueue, writeTQueue)
 import Control.Monad (Monad, void, (>>))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), runReaderT, ask, asks, local)
+import Control.Monad.RWS.Strict (evalRWST)
 import Control.Monad.State (StateT, runStateT, get, put)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
@@ -26,7 +28,7 @@ import VisnovDesc
 import Sprite (drawSprite)
 import GLFWHelpers
 
-type Visnov s = ReaderT World (StateT s IO)
+type Visnov s = ReaderT World (StateT s Drawing)
 type Event s = Visnov s ()
 
 newtype Dialogue s a = Dialogue { unDialogue :: (ReaderT Character (Visnov s) a)} deriving (Monad)
@@ -39,6 +41,21 @@ runVisnov v w s = do
       height = 480
 
   withWindow width height "GLFW-b-demo" $ \win -> do
+    eventsChan <- newTQueueIO :: IO (TQueue GLEvent)
+    GLFW.setErrorCallback               $ Just $ errorCallback           eventsChan
+    GLFW.setWindowPosCallback       win $ Just $ windowPosCallback       eventsChan
+    GLFW.setWindowSizeCallback      win $ Just $ windowSizeCallback      eventsChan
+    GLFW.setWindowCloseCallback     win $ Just $ windowCloseCallback     eventsChan
+    GLFW.setWindowRefreshCallback   win $ Just $ windowRefreshCallback   eventsChan
+    GLFW.setWindowFocusCallback     win $ Just $ windowFocusCallback     eventsChan
+    GLFW.setWindowIconifyCallback   win $ Just $ windowIconifyCallback   eventsChan
+    GLFW.setFramebufferSizeCallback win $ Just $ framebufferSizeCallback eventsChan
+    GLFW.setMouseButtonCallback     win $ Just $ mouseButtonCallback     eventsChan
+    GLFW.setCursorPosCallback       win $ Just $ cursorPosCallback       eventsChan
+    GLFW.setCursorEnterCallback     win $ Just $ cursorEnterCallback     eventsChan
+    GLFW.setScrollCallback          win $ Just $ scrollCallback          eventsChan
+    GLFW.setKeyCallback             win $ Just $ keyCallback             eventsChan
+    GLFW.setCharCallback            win $ Just $ charCallback            eventsChan
     GLFW.swapInterval 1
     --GL.enable CapDepthTest Disabled 
     --GL.enable CapAlphaTest Disabled 
@@ -49,16 +66,15 @@ runVisnov v w s = do
     GL.dither GL.$= GL.Disabled
     GL.blend GL.$= GL.Enabled
     GL.blendFunc GL.$= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
-    --let env = Env
-    --    { envEventsChan    = eventsChan
-    --    , envWindow        = win
-    --    }
-    --  state = State
-    --    { stateWindowWidth     = width
-    --    , stateWindowHeight    = height
-    --    }
-    --runDemo env state
-    void $ runStateT (runReaderT v w) s
+    let env = Env
+          { envEventsChan    = eventsChan
+          , envWindow        = win
+          }
+        state = State
+          { stateWindowWidth     = width
+          , stateWindowHeight    = height
+          }
+    void $ evalRWST (adjustWindow >> runStateT (runReaderT v w) s) env state
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith

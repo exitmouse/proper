@@ -1,4 +1,24 @@
-module GLFWHelpers (Env, State, withWindow) where
+module GLFWHelpers ( Drawing
+                   , Env(..)
+                   , GLEvent(..)
+                   , State(..)
+                   , withWindow
+                   , adjustWindow
+                   , errorCallback
+                   , windowPosCallback
+                   , windowSizeCallback
+                   , windowCloseCallback
+                   , windowRefreshCallback
+                   , windowFocusCallback
+                   , windowIconifyCallback
+                   , framebufferSizeCallback
+                   , mouseButtonCallback
+                   , cursorPosCallback
+                   , cursorEnterCallback
+                   , scrollCallback
+                   , keyCallback
+                   , charCallback
+                   ) where
 
 --------------------------------------------------------------------------------
 
@@ -17,7 +37,7 @@ import qualified Graphics.UI.GLFW          as GLFW
 --------------------------------------------------------------------------------
 
 data Env = Env
-    { envEventsChan    :: TQueue Event
+    { envEventsChan    :: TQueue GLEvent
     , envWindow        :: !GLFW.Window
     }
 
@@ -28,7 +48,7 @@ data State = State
 
 --------------------------------------------------------------------------------
 
-data Event =
+data GLEvent =
     EventError           !GLFW.Error !String
   | EventWindowPos       !GLFW.Window !Int !Int
   | EventWindowSize      !GLFW.Window !Int !Int
@@ -44,10 +64,39 @@ data Event =
   | EventKey             !GLFW.Window !GLFW.Key !Int !GLFW.KeyState !GLFW.ModifierKeys
   | EventChar            !GLFW.Window !Char
   deriving Show
+errorCallback           :: TQueue GLEvent -> GLFW.Error -> String                                                            -> IO ()
+windowPosCallback       :: TQueue GLEvent -> GLFW.Window -> Int -> Int                                                       -> IO ()
+windowSizeCallback      :: TQueue GLEvent -> GLFW.Window -> Int -> Int                                                       -> IO ()
+windowCloseCallback     :: TQueue GLEvent -> GLFW.Window                                                                     -> IO ()
+windowRefreshCallback   :: TQueue GLEvent -> GLFW.Window                                                                     -> IO ()
+windowFocusCallback     :: TQueue GLEvent -> GLFW.Window -> GLFW.FocusState                                                  -> IO ()
+windowIconifyCallback   :: TQueue GLEvent -> GLFW.Window -> GLFW.IconifyState                                                -> IO ()
+framebufferSizeCallback :: TQueue GLEvent -> GLFW.Window -> Int -> Int                                                       -> IO ()
+mouseButtonCallback     :: TQueue GLEvent -> GLFW.Window -> GLFW.MouseButton   -> GLFW.MouseButtonState -> GLFW.ModifierKeys -> IO ()
+cursorPosCallback       :: TQueue GLEvent -> GLFW.Window -> Double -> Double                                                 -> IO ()
+cursorEnterCallback     :: TQueue GLEvent -> GLFW.Window -> GLFW.CursorState                                                 -> IO ()
+scrollCallback          :: TQueue GLEvent -> GLFW.Window -> Double -> Double                                                 -> IO ()
+keyCallback             :: TQueue GLEvent -> GLFW.Window -> GLFW.Key -> Int -> GLFW.KeyState -> GLFW.ModifierKeys            -> IO ()
+charCallback            :: TQueue GLEvent -> GLFW.Window -> Char                                                             -> IO ()
+
+errorCallback           tc e s            = atomically $ writeTQueue tc $ EventError           e s
+windowPosCallback       tc win x y        = atomically $ writeTQueue tc $ EventWindowPos       win x y
+windowSizeCallback      tc win w h        = atomically $ writeTQueue tc $ EventWindowSize      win w h
+windowCloseCallback     tc win            = atomically $ writeTQueue tc $ EventWindowClose     win
+windowRefreshCallback   tc win            = atomically $ writeTQueue tc $ EventWindowRefresh   win
+windowFocusCallback     tc win fa         = atomically $ writeTQueue tc $ EventWindowFocus     win fa
+windowIconifyCallback   tc win ia         = atomically $ writeTQueue tc $ EventWindowIconify   win ia
+framebufferSizeCallback tc win w h        = atomically $ writeTQueue tc $ EventFramebufferSize win w h
+mouseButtonCallback     tc win mb mba mk  = atomically $ writeTQueue tc $ EventMouseButton     win mb mba mk
+cursorPosCallback       tc win x y        = atomically $ writeTQueue tc $ EventCursorPos       win x y
+cursorEnterCallback     tc win ca         = atomically $ writeTQueue tc $ EventCursorEnter     win ca
+scrollCallback          tc win x y        = atomically $ writeTQueue tc $ EventScroll          win x y
+keyCallback             tc win k sc ka mk = atomically $ writeTQueue tc $ EventKey             win k sc ka mk
+charCallback            tc win c          = atomically $ writeTQueue tc $ EventChar            win c
 
 --------------------------------------------------------------------------------
 
-type Demo = RWST Env () State IO
+type Drawing = RWST Env () State IO
 
 --------------------------------------------------------------------------------
 
@@ -75,12 +124,12 @@ withWindow width height title f = do
 
 --------------------------------------------------------------------------------
 
---runDemo :: Env -> State -> IO ()
---runDemo env state = do
+--runDrawing :: Env -> State -> IO ()
+--runDrawing env state = do
 --    printInstructions
 --    void $ evalRWST (adjustWindow >> run) env state
 --
---run :: Demo ()
+--run :: Drawing ()
 --run = do
 --    win <- asks envWindow
 --
@@ -94,7 +143,7 @@ withWindow width height title f = do
 --    q <- liftIO $ GLFW.windowShouldClose win
 --    unless q run
 
-processEvents :: Demo ()
+processEvents :: Drawing ()
 processEvents = do
     tc <- asks envEventsChan
     me <- liftIO $ atomically $ tryReadTQueue tc
@@ -104,7 +153,7 @@ processEvents = do
           processEvents
       Nothing -> return ()
 
-processEvent :: Event -> Demo ()
+processEvent :: GLEvent -> Drawing ()
 processEvent ev =
     case ev of
       (EventError e s) -> do
@@ -170,7 +219,7 @@ processEvent ev =
       (EventChar _ c) ->
           printEvent "char" [show c]
 
-adjustWindow :: Demo ()
+adjustWindow :: Drawing ()
 adjustWindow = do
     state <- get
     let width  = stateWindowWidth  state
@@ -182,7 +231,7 @@ adjustWindow = do
         GL.viewport   GL.$= (pos, size)
         -- TODO SETUP PROJECTION
 
-draw :: Demo ()
+draw :: Drawing ()
 draw = do
     --env   <- ask
     --state <- get
@@ -344,7 +393,7 @@ getJoystickNames =
 
 --------------------------------------------------------------------------------
 
-printEvent :: String -> [String] -> Demo ()
+printEvent :: String -> [String] -> Drawing ()
 printEvent cbname fields =
     liftIO $ putStrLn $ cbname ++ ": " ++ unwords fields
 
