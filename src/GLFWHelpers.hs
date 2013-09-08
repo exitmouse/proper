@@ -39,7 +39,7 @@ drawGameText s = do
   tgt <- asks surface
   state <- get
   font <- liftIO $ openFont "/usr/share/fonts/TTF/LiberationMono-Regular.ttf" 12
-  im <- liftIO $ renderUTF8Solid font s (Color 1 0 0)
+  im <- liftIO $ renderUTF8Solid font s (Color 0 0 255)
   let w = surfaceGetWidth im
       h = surfaceGetHeight im
       x = 40
