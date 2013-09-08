@@ -1,4 +1,9 @@
-module Sound where
+module Sound ( play
+             , playBackground
+             , pauseBackgroundMusic
+             , resumeBackgroundMusic
+             , endBackgroundMusic
+             ) where
 
 {- Requires (Haskell) sdl, sdl-mixer, (non-Haskell) sdl_mixer -}
 
