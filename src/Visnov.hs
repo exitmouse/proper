@@ -13,7 +13,7 @@ module Visnov ( Visnov
               , background
               ) where
 
-import Control.Monad (Monad, (>>))
+import Control.Monad (Monad, void, (>>))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), runReaderT, ask, asks, local)
 import Control.Monad.State (StateT, runStateT, get, put)
@@ -33,7 +33,7 @@ newtype Dialogue s a = Dialogue { unDialogue :: (ReaderT Character (Visnov s) a)
 instance IsString (Dialogue s ()) where
   fromString s = Dialogue $ liftIO (writeGameText s)
 
-runVisnov :: Visnov s a -> World -> s -> IO (a, s)
+runVisnov :: Visnov s a -> World -> s -> IO ()
 runVisnov v w s = do
   let width  = 640
       height = 480
@@ -58,7 +58,7 @@ runVisnov v w s = do
     --    , stateWindowHeight    = height
     --    }
     --runDemo env state
-    runStateT (runReaderT v w) s
+    void $ runStateT (runReaderT v w) s
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith
