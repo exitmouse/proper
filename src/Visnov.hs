@@ -18,7 +18,7 @@ import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), ru
 import Control.Monad.State (StateT, runStateT, get, put)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
-import VisnovDesc (World(..), Character(..))
+import VisnovDesc
 
 type Visnov s = ReaderT World (StateT s IO)
 type Event s = Visnov s ()
@@ -45,6 +45,13 @@ getCharacter s = do
     Nothing -> error "Requested character does not exist"
     Just character -> return character
 
+background :: BackgroundID -> Event u
+background b = do
+  m_bg <- asks $ (M.lookup b) . worldBackgroundMap
+  case m_bg of
+    Nothing -> error "Requested background does not exist"
+    Just bg -> drawBg bg
+
 -- Requires IO, so isn't more general
 getChoice :: [(String, Visnov s a)] -> Visnov s a
 getChoice [] = undefined -- Ha Ha
@@ -58,11 +65,10 @@ pose s = Dialogue $ do
     Nothing -> error "No such pose"
     Just frame -> ReaderT $ \r -> (drawChar frame :: Event u)
 
-drawChar :: FilePath -> Event u
-drawChar f = undefined -- TODO
-
-background :: FilePath -> Event u
-background f = undefined -- TODO
+drawChar :: Pose -> Event u
+drawChar f = undefined -- TODO draw in position for character
+drawBg :: Background -> Event u
+drawBg f = undefined -- TODO draw in position for background
 
 writeGameText :: String -> IO ()
 writeGameText = undefined
