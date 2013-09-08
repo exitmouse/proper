@@ -19,6 +19,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadReader, Reader(..), runReader, ReaderT(..), runReaderT, ask, asks, local)
 import Control.Monad.RWS.Strict (evalRWST)
 import Control.Monad.State (StateT, runStateT, get, put)
+import Control.Monad.Trans.Class (lift)
 import qualified Data.Map as M
 import Data.String (IsString, fromString)
 import qualified Graphics.Rendering.OpenGL as GL
@@ -33,7 +34,7 @@ type Event s = Visnov s ()
 
 newtype Dialogue s a = Dialogue { unDialogue :: (ReaderT Character (Visnov s) a)} deriving (Monad)
 instance IsString (Dialogue s ()) where
-  fromString s = Dialogue $ liftIO (writeGameText s)
+  fromString s = (writeGameText s)
 
 runVisnov :: Visnov s a -> World -> s -> IO ()
 runVisnov v w s = do
@@ -73,11 +74,15 @@ runVisnov v w s = do
         state = State
           { stateWindowWidth     = width
           , stateWindowHeight    = height
+          , advanceText          = False
           }
     void $ evalRWST (adjustWindow >> runStateT (runReaderT v w) s) env state
 
 as :: Character -> Dialogue s () -> Visnov s ()
 as = runDialogueWith
+
+promote :: Drawing a -> Visnov u a
+promote = lift . lift
 
 say :: Dialogue s () -> Dialogue s ()
 say = id
@@ -112,12 +117,17 @@ pose s = Dialogue $ do
   let m_frame = M.lookup s (characterFrames character)
   case m_frame of
     Nothing -> error "No such pose"
-    Just frame -> ReaderT $ \r -> (drawChar frame :: Event u)
+    Just frame -> lift (drawChar frame :: Event u)
 
 drawChar :: Pose -> Event u
 drawChar f = liftIO $ drawSprite f (0, 0)
 drawBg :: Background -> Event u
 drawBg f = liftIO $ drawSprite f (0, 0)
 
-writeGameText :: String -> IO ()
-writeGameText = liftIO . putStrLn
+writeGameText :: String -> Dialogue u ()
+writeGameText s = Dialogue $ do
+  (Character cname _) <- ask
+  ReaderT $ \r -> writeGameTextByChar cname s
+
+writeGameTextByChar :: String -> String -> Visnov u ()
+writeGameTextByChar cname s = promote $ drawGameText (cname ++ ": " ++ s)

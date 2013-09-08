@@ -4,6 +4,7 @@ module GLFWHelpers ( Drawing
                    , State(..)
                    , withWindow
                    , adjustWindow
+                   , drawGameText
                    , errorCallback
                    , windowPosCallback
                    , windowSizeCallback
@@ -25,7 +26,7 @@ module GLFWHelpers ( Drawing
 import Control.Concurrent.STM    (TQueue, atomically, newTQueueIO, tryReadTQueue, writeTQueue)
 import Control.Monad             (unless, when, void)
 --import Control.Monad.RWS.Strict  (RWST, ask, asks, evalRWST, get, liftIO, modify, put)
-import Control.Monad.RWS.Strict  (RWST, asks, evalRWST, get, liftIO, modify)
+import Control.Monad.RWS.Strict  (RWST, ask, asks, evalRWST, get, liftIO, modify)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.List                 (intercalate)
 import Data.Maybe                (catMaybes)
@@ -44,6 +45,7 @@ data Env = Env
 data State = State
     { stateWindowWidth     :: !Int
     , stateWindowHeight    :: !Int
+    , advanceText          :: !Bool
     }
 
 --------------------------------------------------------------------------------
@@ -215,6 +217,8 @@ processEvent ev =
               -- i: print GLFW information
               when (k == GLFW.Key'I) $
                 liftIO $ printInformation win
+              when (k == GLFW.Key'Space) $
+                modify $ \s -> s { advanceText = True }
 
       (EventChar _ c) ->
           printEvent "char" [show c]
@@ -237,6 +241,21 @@ draw = do
     --state <- get
     liftIO $ do
         GL.clear [GL.ColorBuffer, GL.DepthBuffer]
+
+drawGameText :: String -> Drawing ()
+drawGameText s = do
+  env <- ask
+  liftIO $ do
+    GL.clear [GL.ColorBuffer, GL.DepthBuffer]
+    renderText s
+  processEvents
+  state <- get
+  unless (advanceText state) $ do
+    modify $ \s -> s { advanceText = False }
+    drawGameText s
+
+renderText :: String -> IO ()
+renderText s = return undefined
 
 --getCursorKeyDirections :: GLFW.Window -> IO (Double, Double)
 --getCursorKeyDirections win = do

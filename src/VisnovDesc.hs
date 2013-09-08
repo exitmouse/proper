@@ -20,14 +20,15 @@ data World = World
   }
 
 data Character = Character
-  { characterFrames :: M.Map PoseID Pose
+  { characterName :: String
+  , characterFrames :: M.Map PoseID Pose
   }
 
-setupCharacter :: (M.Map PoseID FilePath) -> IO Character
-setupCharacter fPoseMap = Character <$> traverse loadSprite fPoseMap
+setupCharacter :: CharacterID -> (M.Map PoseID FilePath) -> IO Character
+setupCharacter charName fPoseMap = (Character charName) <$> traverse loadSprite fPoseMap
 
 setupWorld :: (M.Map CharacterID (M.Map PoseID FilePath)) -> (M.Map BackgroundID FilePath) -> IO World
 setupWorld fCharMap fBgMap = do
-  charMap <- traverse setupCharacter fCharMap
+  charMap <- M.traverseWithKey setupCharacter fCharMap
   bgMap <- traverse loadSprite fBgMap
   return $ World charMap bgMap
