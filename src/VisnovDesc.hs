@@ -17,6 +17,8 @@ type Pose = Sprite
 data World = World
   { worldCharacterMap :: M.Map CharacterID Character
   , worldBackgroundMap :: M.Map BackgroundID Background
+  , worldFileCharacterMap :: M.Map CharacterID FilePath
+  , worldFileBackgroundMap :: M.Map BackgroundID FilePath
   }
 
 data Character = Character
@@ -31,4 +33,4 @@ setupWorld :: M.Map CharacterID (M.Map PoseID FilePath) -> M.Map BackgroundID Fi
 setupWorld fCharMap fBgMap = do
   charMap <- M.traverseWithKey setupCharacter fCharMap
   bgMap <- traverse loadSprite fBgMap
-  return $ World charMap bgMap
+  return $ World charMap bgMap fCharMap fBgMap

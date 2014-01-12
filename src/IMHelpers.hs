@@ -1,13 +1,13 @@
-module GLFWHelpers ( Drawing
-                   , Env(..)
-                   , State(..)
-                   , drawGameText
-                   , drawGameTextBox
-                   , writeGameTextByChar
-                   , writeMenuText
-                   , waitForTextAdvance
-                   , waitForMenuChoice
-                   ) where
+module IMHelpers ( Drawing
+                 , Env(..)
+                 , State(..)
+                 , drawGameText
+                 , drawGameTextBox
+                 , writeGameTextByChar
+                 , writeMenuText
+                 , waitForTextAdvance
+                 , waitForMenuChoice
+                 ) where
 
 --------------------------------------------------------------------------------
 
@@ -21,9 +21,6 @@ import Data.List                 (intercalate)
 import Data.Maybe                (catMaybes)
 
 import Graphics.UI.SDL
-import Graphics.UI.SDL.TTF
-import Graphics.UI.SDL.Primitives (box)
-import System.Cmd
 
 --------------------------------------------------------------------------------
 

@@ -1,0 +1,45 @@
+ab18250 - Jesse Selover, 5 minutes ago : Do some hlint cleanup.
+7bfb847 - Jesse Selover, 2 hours ago : Demonstrate api in Main.hs more fully.
+f71eac9 - Jesse Selover, 2 hours ago : Remove 2 second delay when drawing text. As a bonus, flip at the right times.
+fff1b26 - Jesse Selover, 3 hours ago : Use user input to advance text, and to choose in menus. Playable!!
+7e50839 - Jesse Selover, 3 hours ago : Properly refresh the screen.
+2f8201f - Jesse Selover, 4 hours ago : Add a text box.
+0b06467 - Jesse Selover, 4 hours ago : Change text color from 1 0 0 to 0 0 255
+c42a01e - Jesse Selover, 4 hours ago : Fix everything by initializing SDL-ttf.
+119ca68 - Jesse Selover, 4 hours ago : Remove commented out cat drawing code.
+5542aa5 - Jesse Selover, 4 hours ago : Use lift instead of hackily reimplementing lift.
+3c66fa1 - Jesse Selover, 4 hours ago : Convert from type annotations to using the 'say' function in Main.hs completely.
+98cc423 - Jesse Selover, 4 hours ago : Flip the buffers when you draw text, and wait two seconds since we don't wait for user input yet.
+d947525 - Jesse Selover, 5 hours ago : WIP on master: dfd77bc Start writing writeGameText.
+5ada868 - Jesse Selover, 5 hours ago : index on master: dfd77bc Start writing writeGameText.
+dfd77bc - Jesse Selover, 7 hours ago : Start writing writeGameText.
+7d51386 - Jesse Selover, 8 hours ago : Add event processing, and the RWST monad, to Visnov.
+08a5bf4 - Jesse Selover, 9 hours ago : Void in runVisnov to make the types work.
+d4a4622 - Jesse Selover, 9 hours ago : Remove vim swap files.
+2552d7d - Jesse Selover, 11 hours ago : Die, graphics-drawingcombinators. You don't belong in this .cabal.
+8922fae - Jesse Selover, 11 hours ago : Fix Prelude.undefined. Make placeholder setupOpenGL function.
+129f55b - Jesse Selover, 11 hours ago : Implement drawChar, drawBg, clarify the getChoice error.
+bee7248 - Jesse Selover, 12 hours ago : Fix type signature problem for bare text, play some bg music.
+9d767c0 - Jesse Selover, 12 hours ago : Add sound packages, give Sound module explicit exports.
+1493cdf - Jesse Selover, 12 hours ago : Merge branch 'master' of https://github.com/exitmouse/proper
+1575653 - Jesse Selover, 12 hours ago : Paris bg programmer art.
+f709008 - Jesse Selover, 12 hours ago : Add some simple initialization world to Main.hs
+f595b4c - Jesse Selover, 14 hours ago : Update VisnovDesc to use Sprite module, and have setup functions.
+0c13d0a - Jesse Selover, 14 hours ago : Merge branch 'master' of https://github.com/exitmouse/proper
+055eca1 - Jesse Selover, 14 hours ago : Change the type signature of talk for maximum type inference cuteness.
+ca418ec - Jesse Selover, 14 hours ago : Format GPL-3 correctly in proper.cabal.
+105401f - Jesse Selover, 14 hours ago : Don't require graphics-drawingcombinators in the glfw-demo cabal file.
+6ddcc29 - Jesse Selover, 15 hours ago : Gigor (pronounced "guy gore").
+1a6df98 - Jesse Selover, 15 hours ago : Pigeon.
+3e72d97 - Jesse Selover, 16 hours ago : Drawingcombinators is broken. Revert glfw-demo to 5a11419.
+ad7b476 - Jesse Selover, 16 hours ago : Yes, it renders now. No, I can't tell you why.
+50aa680 - Jesse Selover, 17 hours ago : Epilepsy warning.
+2678055 - Jesse Selover, 18 hours ago : Fix up the glfw-demo and add in some drawingcombinators. No visible effect.
+5a11419 - Jesse Selover, 18 hours ago : Ignore more swap files.
+db2e5ce - Jesse Selover, 31 hours ago : Implement initial version of conjectured API. Can anyone do anything about the horrible IsString required type signatures?
+58ab878 - Jesse Selover, 33 hours ago : Add backgrounds, and multiple poses, to VisnovDesc.
+c742b78 - Jesse Selover, 35 hours ago : Add archibald.png.
+2687ba5 - Jesse Selover, 35 hours ago : Add some programmer art.
+a86a7cf - Jesse Selover, 35 hours ago : Add graphics-drawingcombinators dependence. Make sure you have ftgl installed.
+87249ec - Jesse Selover, 2 days ago : Minimal working Main.hs. Install with cabal-dev install.
+36bb9f2 - Jesse Selover, 2 days ago : Forget about emacs swap files.
